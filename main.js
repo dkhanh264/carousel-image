@@ -1,43 +1,48 @@
 const track = document.querySelector('.slide-track');
 const slides = [...document.querySelectorAll('.slide')];
+const REAL_SLIDES_COUNT = slides.length;
+const firstClone = slides[0].cloneNode(true);
+track.appendChild(firstClone);
 let i = 0;
 const INTERVAL = 2500;
 let intervalId = null;
+let isTransitioning = false;
 
 const update = () => { 
     track.style.transform = `translateX(-${i * 100}%)`; 
 };
 
+
+
 const goToSlide = (n) => {
-  if (n >= slides.length) {
-        i = 0;
-    } else if (n < 0) {
-        i = slides.length - 1;
-    } else {
-        i = n;
-    }
-  update();
+    if (isTransitioning) return; 
+    i = n;
+    track.style.transition = 'transform 0.4s ease';
+    update();
 };
 
 document.getElementById('next').onclick = () => { 
+    if (isTransitioning) return;
+    isTransitioning = true;
     i = i + 1; 
-    if (i >= slides.length) {
-        i = 0;
-    }
+    track.style.transition = 'transform 0.4s ease';
     update(); 
 };
 
 document.getElementById('prev').onclick = () => { 
-    i = i - 1;
-    if (i < 0) {
-        i = slides.length - 1;
-    }
+    if (isTransitioning) return;
+    isTransitioning = true;
+   i = (i - 1 + REAL_SLIDES_COUNT) % REAL_SLIDES_COUNT;
+    
+    track.style.transition = 'transform 0.4s ease';
     update(); 
 };
 
 const startAuto = () => { 
     stopAuto(); 
-    intervalId = setInterval(() => goToSlide(i + 1), INTERVAL); 
+    intervalId = setInterval(() => {
+        document.getElementById('next').click();
+    }, INTERVAL);
 };
 
 const stopAuto  = () => { 
@@ -46,6 +51,17 @@ const stopAuto  = () => {
         intervalId = null; 
     } 
 };
+
+track.addEventListener('transitionend', () => {
+    if (i === REAL_SLIDES_COUNT) {
+        track.style.transition = 'none';
+        i = 0;
+        update();     
+    }
+    requestAnimationFrame(() => {
+        isTransitioning = false;
+    });
+});
 
 const carousel = document.querySelector('.carousel-image');
 carousel.addEventListener('mouseenter', stopAuto);
