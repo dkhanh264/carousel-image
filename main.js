@@ -2,23 +2,16 @@ const track = document.querySelector('.slide-track');
 const slides = [...document.querySelectorAll('.slide')];
 const REAL_SLIDES_COUNT = slides.length;
 const firstClone = slides[0].cloneNode(true);
+const endClone = slides[REAL_SLIDES_COUNT - 1].cloneNode(true);
+track.prepend(endClone);
 track.appendChild(firstClone);
-let i = 0;
+let i = 1;
 const INTERVAL = 2500;
 let intervalId = null;
 let isTransitioning = false;
 
 const update = () => { 
     track.style.transform = `translateX(-${i * 100}%)`; 
-};
-
-
-
-const goToSlide = (n) => {
-    if (isTransitioning) return; 
-    i = n;
-    track.style.transition = 'transform 0.4s ease';
-    update();
 };
 
 document.getElementById('next').onclick = () => { 
@@ -32,8 +25,7 @@ document.getElementById('next').onclick = () => {
 document.getElementById('prev').onclick = () => { 
     if (isTransitioning) return;
     isTransitioning = true;
-   i = (i - 1 + REAL_SLIDES_COUNT) % REAL_SLIDES_COUNT;
-    
+    i = i - 1; 
     track.style.transition = 'transform 0.4s ease';
     update(); 
 };
@@ -53,10 +45,14 @@ const stopAuto  = () => {
 };
 
 track.addEventListener('transitionend', () => {
-    if (i === REAL_SLIDES_COUNT) {
+    if (i === REAL_SLIDES_COUNT + 1) {
         track.style.transition = 'none';
-        i = 0;
+        i = 1;
         update();     
+    } else if (i === 0){
+        track.style.transition = 'none';
+        i = REAL_SLIDES_COUNT;
+        update(); 
     }
     requestAnimationFrame(() => {
         isTransitioning = false;
